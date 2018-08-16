@@ -27,6 +27,11 @@ brew install ipython
 
 Then following the DjangoGirls tutorial I created a virtual environment as follows inside my project folder:
 
+## Virtual Environment (venv)
+
+In python, venv is a bit like doing Bundle Exec Rake in Ruby. It wraps up all your dependencies and things that you need to run your project in python.
+
+
 ```
 python3 -m venv myvenv
 ```
@@ -39,9 +44,6 @@ source myvenv/bin/activate.fish
 
 (Note that for bash you would just type `source myvenv/bin/activate` and then press tab for the right file name)
 
-## Virtual Environment (venv)
-
-In python, venv is a bit like doing Bundle Exec Rake in Ruby. It wraps up all your dependencies and things that you need to run your project in python.
 
 ## Installing Django
 
@@ -144,3 +146,53 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 When DEBUG is True and ALLOWED_HOSTS is empty, the host is validated against ['localhost', '127.0.0.1', '[::1]']. This won't match our hostname on PythonAnywhere once we deploy our application so we will change the following setting:
 
 ALLOWED_HOSTS = ['127.0.0.1', '.pythonanywhere.com']
+
+## Set up database
+
+Database settings can be found in the mysite/settings.py file. In order to set up the sqlite database that comes with django use:
+
+```sh
+python manage.py migrate
+```
+
+## Start web server
+
+```sh
+python manage.py runserver
+```
+
+Note that this will run in the terminal so to get a new myenv promt, navigate to the directory in a new terminal tab or window and:
+```
+source myvenv/bin/activate [tab for appropriate extension]
+```
+
+### Check that mysite is being hosted locally 
+
+Navigate to localhost:8000 in your browser
+
+## Django Models
+
+bject oriented programming is the idea that, rather than just procedural (a sequence of instructions as it were) programs can be models of ideas and concepts
+
+These models are made up of objects that have attributes or properties to describe them, and have actions or methods that allow them to interact with each other and the world
+
+This tutorial is about making a blog. We can think of modelling a post as follows
+
+> Post
+> --------
+> title
+> text
+> author
+> created_date
+> published_date
+> publish()       # this is a method
+
+Note that this kind of object modelled in Django, can be stored in a database (as there are likely to be lots of posts)
+
+## Creating an application
+
+A project might have many parts to it, in programming these are referred to often as applications. To make a blog app in our project folder:
+
+```sh
+
+
