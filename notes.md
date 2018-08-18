@@ -189,10 +189,83 @@ This tutorial is about making a blog. We can think of modelling a post as follow
 
 Note that this kind of object modelled in Django, can be stored in a database (as there are likely to be lots of posts)
 
+An object with methods and properties such as a post would usually be described in Pythin by a class
+
 ## Creating an application
 
 A project might have many parts to it, in programming these are referred to often as applications. To make a blog app in our project folder:
 
 ```sh
+python manage.py startapp blog
+```
 
+The project folder directory should now look like this:
 
+> project-folder
+> ├── blog
+> │   ├── __init__.py
+> │   ├── admin.py
+> │   ├── apps.py
+> │   ├── migrations
+> │   │   └── __init__.py
+> │   ├── models.py
+> │   ├── tests.py
+> │   └── views.py
+> ├── db.sqlite3
+> ├── manage.py
+> └── mysite
+>     ├── __init__.py
+>     ├── settings.py
+>     ├── urls.py
+>     └── wsgi.py
+
+To tell Django to find and use this app, we need to edit the mysite/settings.py file to include the last line 'blog' as shown below:
+
+```py
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'blog',
+]
+```
+
+## models.py
+
+Like the rails convention of model=view-controller, python has models too. These contain the objects that you are modelling and are defined/described by classes.
+
+When modelling an object such as a post, that is going to be stored in a database, you also include the database field descriptors such as ForeignKey (which links it to other models), type of field (such as CharField (character field) and whether it can be black or null. This (in Ruby) is known as a schema and is NOT stored with the model. 
+
+## Migrations
+
+To crate a migration file from your model (which you can then edit for more complicated database shenanigans) run:
+
+```sh
+python manage.py makemigrations blog
+```
+
+This generates a migration file called something like 0001_initial.py. To add the model actually to the database run:
+
+```sh
+python manage.py migrate blog
+```
+
+## Registering Models
+
+This is done in the blog/admin.py file:
+
+```py
+from django.contrib import admin
+from .models import Post
+
+admin.site.register(Post)
+```
+
+## Create admin/superuser
+
+```sh
+python manage.py createsuperuser
+```
