@@ -269,3 +269,26 @@ admin.site.register(Post)
 ```sh
 python manage.py createsuperuser
 ```
+
+## Securiyt and deployment
+
+Can take local_settings out of version control and just commit settings with debug set to false and the secret key as an environment vatiable:
+
+```py
+with open('/etc/secret_key.txt') as f:
+    SECRET_KEY = f.read().strip()
+```
+or 
+
+```py
+SECRET_KEY = os.environ['SECRET_KEY']
+```
+And debug set to false but to continue dev while being deployed is very frustrating like this I feel like there should be a much better way...
+
+like to have a dev env and a prod env that you just switch to really easily/happens automativcally...
+
+probably best to just use environment variables
+In the meantime I have changed manage.py and wsgi.py settings.py references to local_settings.py which isn't in version control.
+
+Debug is still set to True in the local_settings which is one of the things that would be good to have in a dev env but not prod...
+
