@@ -19,6 +19,7 @@ from django.conf.urls import include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('admin/doc/', include('django.contrib.admindocs.urls')),
     path('', include('blog.urls')),
 ]
 # this directs the home(root) ('') to the urls config file blog/urls.py

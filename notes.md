@@ -366,6 +366,32 @@ to query the database from the shell etc from the myenv prompt run:
 python manage.py shell
 ```
 
+## Dynamic data in templates
 
+in *blog/views.py* add:
 
+```py
+from .models import Post
 
+def post_list(request):
+
+    posts = Post.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
+
+    return render(request, 'blog/post_list.html', {})
+```
+
+### Querysets 
+ Under the def above we assign the variable posts using the Django ORM (Querysets) language. the '/_/_' is how you attach a method to a field in this synax ('lte' is less than or equal to, 'contains' is just 'contains' but note this is NOT the same filter as Pythin's filter it is just for queries.
+
+Now in Django terminology we have created a queryset called 'posts'
+
+This needs to be passed as a parameter in the render, so the last line becomes:
+
+```
+    return render(request, 'blog/post_list.html', {'posts': posts})
+```
+
+### Template tags and filters (built in django)
+
+In order to include code and parts of models etc in your templates, including variables assigned in the views, including ways to filter and add line breaks etc. See docs:
+[https://docs.djangoproject.com/en/2.1/ref/templates/builtins/#block](https://docs.djangoproject.com/en/2.1/ref/templates/builtins/#block)
