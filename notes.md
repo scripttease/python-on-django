@@ -292,3 +292,70 @@ In the meantime I have changed manage.py and wsgi.py settings.py references to l
 
 Debug is still set to True in the local_settings which is one of the things that would be good to have in a dev env but not prod...
 
+
+/******** NB remember to change TZ to UTC +1********
+
+
+## Registering Models with Admin
+
+In order to use the GUI that Django provides for admins to let us add, edit etc objects in the database, we don't have to always use a shell like in Ruby - we can use the admin/superuser account but to do this the models need to be registered in *blog/admin/py*
+
+```py
+from django.contrib import admin
+from .models import Post
+
+admin.site.register(Post)
+```
+
+## URL configuration
+
+```py
+"""mysite URL Configuration
+
+[...]
+"""
+```
+Anything elclosed in """ in py is a docstring
+```py
+from django.urls import path, include
+from django.contrib import admin
+```
+These import from python librarie - we use 'include' below so we need to import it as it isn't in the std lib
+```py
+urlpatterns = [
+    path('admin/', admin.site.urls),
+]
+```
+In the py tuple above the first item is the string containing the part of the url ('' is the root, 'admin/' is home/admin/) the second item is location of the view (which contains the logic for making the template html which is rendered on the page) The syntax for directories here is that a '.' replaces what we would normally read as a '/' in a file directory so the admin views are in *admin/site/urls.py* which incidentally is part of the admin library imported above so you cant actually see it. To keep this url file tidy we will redirect to the urls.py file in the *blog* folder with the following line:
+
+```py
+    path('', include('blog.urls')),
+```
+
+And in *blog/urls.py* :
+```py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.post_list, name='post_list'),
+]
+```
+The import path is the library used for easily importing files and then we import views from the current folder (which is what 'from .' means.
+
+The tuple contains the url part, the name of the view function (although here the '.' isn't a subfolder, it is a definition inside the views.py file, and then 'name='post_list' which is to do with namespacing (see [https://docs.djangoproject.com/en/2.0/topics/http/urls/](https://docs.djangoproject.com/en/2.0/topics/http/urls/)
+
+A minimal view could now be created in *blog/views.py* as follows:
+
+```py
+from django.shortcuts import render
+
+def post_list(request):
+    return render(request, 'blog/post_list.html', {})
+```
+
+## Templates
+
+The render library looks for templates in a directory names templates so the above instruction looks at *blog/templates/blog/post_list.html* for the template. 
+
+
