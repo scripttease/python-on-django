@@ -358,4 +358,14 @@ def post_list(request):
 
 The render library looks for templates in a directory names templates so the above instruction looks at *blog/templates/blog/post_list.html* for the template. 
 
+## Interactive Shell/console
+
+to query the database from the shell etc from the myenv prompt run:
+
+```sh
+python manage.py shell
+```
+
+
+
 
