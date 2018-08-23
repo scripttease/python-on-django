@@ -395,3 +395,124 @@ This needs to be passed as a parameter in the render, so the last line becomes:
 
 In order to include code and parts of models etc in your templates, including variables assigned in the views, including ways to filter and add line breaks etc. See docs:
 [https://docs.djangoproject.com/en/2.1/ref/templates/builtins/#block](https://docs.djangoproject.com/en/2.1/ref/templates/builtins/#block)
+
+## Static files (css etc)
+
+> myproject
+> ├── blog
+> │   ├── migrations
+> │   ├── static
+> │   │   └── css
+> │   │       └──blog.css
+> │   │   
+> │   └── templates
+> └── mysite
+
+Make the *static* folder shown above is where in your directory you should keep the static files such as css files as shown.
+
+To read these from the generated html include the following in the *blog/post_list.html* file at the beginning:
+```html
+{% load static %}
+```
+And this line at the end of the head tag
+```html
+<link rel="stylesheet" href="{% static 'css/blog.css' %}">
+```
+Note it is loaded AFTER the css files so that it overwrites them so you have bootstrap PLUS your own css...
+
+## Template extending
+
+placing a file called base.html in your *templates/blog* directory means that you can use the same head and headers footer, titles etc in all your templates without repeating the code. Then hte page-specific code can be called using the following code in the body tag of the base.html file:
+
+```html
+<body>
+    <div class="page-header">
+        <h1><a href="/">Python Blog</a></h1>
+    </div>
+    <div class="content container">
+        <div class="row">
+            <div class="col-md-8">
+            {% block content %}
+            {% endblock %}
+            </div>
+        </div>
+    </div>
+</body>
+```
+
+it is the block endblockinserted Python code that is important here. To link the page specific html to the base html start the pot_list.html filr with :
+
+```html
+{% extends 'blog/base.html' %}
+```
+And surround the page specific html with Python inserted code block-endblock notation as shown (example of post_list.html file):
+
+
+```html
+{% extends 'blog/base.html' %}
+{% block content %}
+{% for post in posts %}
+<div class="post">
+    <div class="date">
+        {{ post.published_date }}
+    </div>
+    <h1><a href="">{{ post.title }}</a></h1>
+    <p>{{ post.text|linebreaksbr }}</p>
+</div>
+{% endfor %}
+{% endblock %}
+```
+
+## Django template tag URLs and links to database objects
+
+In order to link to a specific post (ie the first post) in our blog we could add a url to the href link on this line in post_list.html
+
+```html
+ <h1><a href="">{{ post.title }}</a></h1>
+```
+like so:
+```html
+<h1><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h1>
+```
+This uses django's URL template tag, which has space seperated arguments, the first being a view, the second, third ... being optional arguments used in the url.
+
+The `pk=post.pk` means that for each post ew will get a pk (primary key). This is an attribute for an object. We have defined post with the line `for post in posts` in the template, and posts is defined in our view BUT it is defined under post_list NOT post_detail... so we need to remember to define `post` in our view in the post_detail function/action/method as well as reusing the definition for Posts
+
+The `post_detail`  in the above *href* means that we need a URL in *blog/urls.py* with `name=post_detail`: It should look like this
+
+```python
+    path('post/<int:pk>', views.post_detail, name='post_detail'),
+```
+
+The view title and name are straight forward but when it comes to the route or what we want the url to actually look like - well here we want `/post/1` or `post/2` or whatever number is appropriate and so we can use the primary key which is automatically assinged to make every entry unique even if all other fields are the same. You can make the primary key have a name OR a value if you like but if you don't, one is just assigned and it gies up numerically. In Rails and other frameworks the pk is often called the id.
+This part `post/<int:pk>/` specifies a URL pattern:
+
+* post/ just means that the URL should begin with the word post followed by a /. 
+* `<int:pk>` – this part is trickier. It means that Django expects an integer value and will transfer it to a view as a variable called pk.
+
+That means if you enter http://127.0.0.1:8000/post/5/ into your browser, Django will understand that you are looking for a view called post_detail and transfer the information that pk equals 5 to that view.
+
+we don't have a view yet...
+
+we know that the post detail definition needs to have two parameters now, the request, and the pk...
+
+We can use Post.objects.get(pk=pk) (like doing Post.objects.get(pk=1) but with the variable we have passed to the view being the correct post number) to get the primary key but we need to catch the error when there is no post with the primary key specified.
+
+Our view will have this included:
+
+```py
+
+def post_detail(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    return render(request, 'blog/post_detail.html', {'posts': posts})
+```
+
+Notice how we can rewrite `Post.objects.get(pk=pk)` as `get_object_or_404` with the *argument* as Post instead of having it as a method on Post. The secod argument is what the argument for `.objects.get` would have been.
+
+In the views we can also import Django's nice 404 page:
+```
+from django.shortcuts import render, get_object_or_404
+```
+
+
