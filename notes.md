@@ -514,5 +514,88 @@ In the views we can also import Django's nice 404 page:
 ```
 from django.shortcuts import render, get_object_or_404
 ```
+## Django forms
+
+Forms are just a convenient GUI way for a user to send data to a erver (and in this case, our website and database)
+
+In Django, Forms can be scaffolded for models using a file *forms.py*. This should be created as a subdirectory of *project/blog/* In *blog/forms.py* add the following:
+
+```py
+from django import forms
+from .models import Post
+
+class PostForm(forms.ModelForm):
+
+    class Meta:
+        model = Post
+        fields = ('title', 'text',)
+```
+
+### Inheritance and subclassing from class/classes
+
+the syntax for this is `class Classname(library.Superclass):`
+
+This page now needs a link in URLs, a view and a template
+
+The following line placed at the beginning of the *page-header* div will add a PLUS sign which links to all the pages (as its in *base.html*):
+
+```html
+<a href="{% url 'post_new' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
+```
+
+So our url will be called post_new.
+
+Note that the following needs to be in *blog/views.py*:
+```py
+from .forms import PostForm
+```
+
+And in the definition you need:
+
+```py
+def post_new(request):
+    if request.method == "POST":
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.published_date = timezone.now()
+            post.save()
+            return redirect('post_detail', pk=post.pk)
+    else:
+        form = PostForm()
+    return render(request, 'blog/post_edit.html', {'form': form})
+```
+
+For the template *blog/templates/blog/post_edit.html*:
+
+```html
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <h1>New post</h1>
+    <form method="POST" class="post-form">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Save</button>
+    </form>
+{% endblock %}
+```
+
+To break this down, the HTML form element defines how tha data will be sent.
+
+#### Action attribute
+The form tag *can* have an action that is a valid url - this is where the data is sent (and therefore would need its own definition in the views.py) however if there is no `action=` then it is sent to the URL of the page containing the form, as is the case here (this can also be written as `form action="#"`. 
+
+#### Method attribute
+
+This is how the data is sent. GET and POST are the most common methods. GET asks the server for a resource, (so if a form is used with a GET methid the body is empty) but POST sends data from the client/user.It is the method used when asking the server for a response that takes into account the user input, which goes in the body of the request.
+
+### Class attribute
+This is usually just for the CSS (or javascript) - but it is impoetant here because this CSS for the post-form comes with Django scaffolding for PostForm which we import in the *views.py*.
+
+#### Django form template tags
+
+`{{ form.as_p }}` is a version of the django  `{{ form }}` tag. Using it, All the form’s fields and their attributes will be unpacked into HTML markup from that {{ form }} by Django’s template language, thanks to the *forms.py* file
+
 
 
