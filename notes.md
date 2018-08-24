@@ -7,7 +7,7 @@ This runs a script from the terminal to install the required SSL certificates
 
 - Next I ran the 'Update Shell Profile.command' which runs this:
 
-```
+```sh
 alice_dee ~ $ /Applications/Python\ 3.6/Update\ Shell\ Profile.command ; exit;
 This script will update your shell profile when the 'bin' directory
 of python is not early enough of the PATH of your shell.
@@ -19,10 +19,9 @@ OK this was ... all wrong and I'm not sure how to undo it BUT
 
 to get python3 and ipythin at usr/bin/local which is where you generally want this stuff do this:
 
-```
+```sh
 brew install python3
 brew install ipython
-
 ```
 
 Then following the DjangoGirls tutorial I created a virtual environment as follows inside my project folder:
@@ -32,13 +31,13 @@ Then following the DjangoGirls tutorial I created a virtual environment as follo
 In python, venv is a bit like doing Bundle Exec Rake in Ruby. It wraps up all your dependencies and things that you need to run your project in python.
 
 
-```
+```sh
 python3 -m venv myvenv
 ```
 
 In order to activate the environment:
 
-```
+```sh
 source myvenv/bin/activate.fish
 ```
 
@@ -56,7 +55,7 @@ python3 -m pip install --upgrade pip
 
 You want to keep track of all the files installed by pip for this project so you need to manually create a requirements.txt file
 
-```
+```sh
 touch requirements.txt
 ```
 Edit the file to include the text
@@ -65,7 +64,7 @@ Edit the file to include the text
 
 
 now run 
-```
+```sh
 pip install -r requirements.txt
 ```
 
@@ -82,24 +81,26 @@ Example:
 >>>
 ```
 
-##Python Files
+## Python Files
 
 Exit the interpreter using Ctrl D or type 'exit'
 
 From the venv prompt:
-```
+
+```sh
 touch hello_world.py
 ```
 the .py extension is a python executable file
 
 To run the file use:
 
-```
+```sh
 python3 hello_world.py
 ```
 
 So long as you are in venv, this will also work:
-```
+
+```sh
 python hello_world.py
 ```
 
@@ -162,7 +163,8 @@ python manage.py runserver
 ```
 
 Note that this will run in the terminal so to get a new myenv promt, navigate to the directory in a new terminal tab or window and:
-```
+
+```sh
 source myvenv/bin/activate [tab for appropriate extension]
 ```
 
@@ -316,11 +318,13 @@ admin.site.register(Post)
 """
 ```
 Anything elclosed in """ in py is a docstring
+
 ```py
 from django.urls import path, include
 from django.contrib import admin
 ```
 These import from python librarie - we use 'include' below so we need to import it as it isn't in the std lib
+
 ```py
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -333,6 +337,7 @@ In the py tuple above the first item is the string containing the part of the ur
 ```
 
 And in *blog/urls.py* :
+
 ```py
 from django.urls import path
 from . import views
@@ -358,7 +363,7 @@ def post_list(request):
 
 The render library looks for templates in a directory names templates so the above instruction looks at *blog/templates/blog/post_list.html* for the template. 
 
-## Interactive Shell/console
+## Interactive Shell/console ipython or interpreter
 
 to query the database from the shell etc from the myenv prompt run:
 
@@ -574,7 +579,8 @@ For the template *blog/templates/blog/post_edit.html*:
 
 {% block content %}
     <h1>New post</h1>
-    <form method="POST" class="post-form">{% csrf_token %}
+    <form method="POST" class="post-form">
+        {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="save btn btn-default">Save</button>
     </form>
@@ -590,12 +596,66 @@ The form tag *can* have an action that is a valid url - this is where the data i
 
 This is how the data is sent. GET and POST are the most common methods. GET asks the server for a resource, (so if a form is used with a GET methid the body is empty) but POST sends data from the client/user.It is the method used when asking the server for a response that takes into account the user input, which goes in the body of the request.
 
-### Class attribute
+#### Class attribute
 This is usually just for the CSS (or javascript) - but it is impoetant here because this CSS for the post-form comes with Django scaffolding for PostForm which we import in the *views.py*.
 
 #### Django form template tags
 
 `{{ form.as_p }}` is a version of the django  `{{ form }}` tag. Using it, All the form’s fields and their attributes will be unpacked into HTML markup from that {{ form }} by Django’s template language, thanks to the *forms.py* file
+
+Just using `{{ form }}` will render the form as standard lable/input pairs but you can also have `.as_table` (only includes tr tags you must add the table tag), `.as_p` for paragraphs and `.as_ul` for and unordered list (only includes li tags you must add the ul tag)
+
+To make your own fields manually so that each field is available as an sttribute of the form, use `{{ form.name_of_field}}`.
+
+The html button with the submit will send the data but we have to tell our server/webpage/app what to do with the data. We want it to be saved into the database. This is where the *views.py* code comes in. here is our code:
+
+```py
+def post_new(request):
+    if request.method == "POST":
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.published_date = timezone.now()
+            post.save()
+            return redirect('post_detail', pk=post.pk)
+    else:
+        form = PostForm()
+    return render(request, 'blog/post_edit.html', {'form': form})
+
+```
+Going through this line by line, the first if statement checks the method is correct (I am not sure why it wouldnt be but there you are) the next line assigns `form` to `PostForm` which we have imported from our .forms. this is a class which subclasses (inherits from) ModelForm which is part of the Django framework. [https://github.com/django/django/blob/master/django/forms/models.py](https://github.com/django/django/blob/master/django/forms/models.py) the docs explain about the Meta class:[Https://github.com/django/django/blob/master/DOCS/TOPICs/forms/modelforms.txt ](https://github.com/django/django/blob/master/docs/topics/forms/modelforms.txt) 
+
+The form = PostForm(request.Post) generates a form instance with the data from the request. In the console you could do this by assinging the data to a variable and then using the argument `(instance=variable)`. For example:
+
+```ipython
+>>> from myblog import models as m
+>>> from django.forms import ModelForm
+>>> class PostForm(ModelForm):
+...     class Meta:
+...         model = m.Post
+...
+>>> post = m.Post.objects.all()[0]
+>>> post
+<Post: Post object>
+>>> form = PostForm(instance=post)
+>>> form.as_p()
+u'<p><label for="id_content">Content:</label> <input id="id_content" maxlength="256" name="content" type="text" value="New Post" /></p>\n<p><label for="id_created_at">Datetime created:</label> <input id="id_created_at" name="created_at" type="text" value="2013-08-14 21:12:30" /></p>'
+```
+Although I can't actually get this to work
+
+Anyway, if the form is valid (contains all compulsory fields etc) you want to wait to save it until you aadd the pudblished date time and author (thats why at first commit=False) then you need to save the form.
+
+#### Redirect shortcut
+
+```py
+from django.shortcuts import redirect
+```
+
+this needs to be in the *views.py* so that you can then have the return redirect line that takes the argument for the view action you wish to return and any paramaters required so here it is post_detail. Here post has been defined as the newly created post in the line `post = form.save...` so here pk = post.pk.
+
+The else clause is a PostForm without any data... But we still need a post_edit view and template for this scenario. Although I dont know how you would actually get to this because at the moment if you dont fill in all the fields it just says 'please fill in this field' and stays at post/new.
+
 
 
 
