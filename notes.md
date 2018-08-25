@@ -1,4 +1,5 @@
-## 1.2.2 Installing Python
+# DjangoGirls Tutorial
+## Installing Python
 
 See resources from (https://tutorial.djangogirls.org/en/installation/ [https://tutorial.djangogirls.org/en/installation/] 
 
@@ -58,9 +59,7 @@ You want to keep track of all the files installed by pip for this project so you
 ```sh
 touch requirements.txt
 ```
-Edit the file to include the text
-
-> Django~=2.0.6
+Edit the file to include the text `Django~=2.0.6`
 
 
 now run 
@@ -723,3 +722,6 @@ In order to limit who can create or edit posts you can use the `user.is_authenti
 
 This should also be added to the *post_detail.html* for editing posts.
 
+# Hartle Tutorial for Ruby on Rails.
+
+Following the Hartle ROR tutorial commences in the notes in */hartle-ror-in-python/notes.md*
