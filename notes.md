@@ -519,9 +519,13 @@ In the views we can also import Django's nice 404 page:
 ```
 from django.shortcuts import render, get_object_or_404
 ```
-## Django forms
+## Django forms - ModelForm
 
-Forms are just a convenient GUI way for a user to send data to a erver (and in this case, our website and database)
+most useful docs are here: [Creating forms from models](https://docs.djangoproject.com/en/dev/topics/forms/modelforms/#overriding-the-clean-method)
+
+Forms are just a convenient GUI way for a user to send data to a server (and in this case, our website and database)
+
+In a basic database driven Python app like this one, we want forms that are very similar to our models - ie have the same fields etc. And ModelForm gives us a way to scaffold adding or editing an instance of our model easily by building a form for us. For example with a model Post, you would want a form to help you create and edit Posts and we have created this below using ModelForm and called it PostForm. ModelForm is what is known as a helper class to create your own Form class from a Django model.
 
 In Django, Forms can be scaffolded for models using a file *forms.py*. This should be created as a subdirectory of *project/blog/* In *blog/forms.py* add the following:
 
@@ -529,12 +533,61 @@ In Django, Forms can be scaffolded for models using a file *forms.py*. This shou
 from django import forms
 from .models import Post
 
+# Creating the form class
 class PostForm(forms.ModelForm):
 
     class Meta:
         model = Post
         fields = ('title', 'text',)
 ```
+
+Now we have the model, creating a form to add a Post would look like this:
+`form = PostForm()`
+
+creating a form to change an *existing* Post woyld look like this:
+
+```py
+post = Post.objects.get(pk=1)
+form = PostForm(instance=post)
+```
+
+This is because you need to instatiate the PostForm with the existing Post.
+
+#### Model Form Instance
+A model form instance attached to a model object will contain an instance attribute that gives its methods access to that specific model instance.
+
+hats basically how you can reference a model from a ModelForm.
+
+example from [Stackoverflow](https://stackoverflow.com/questions/18265023/self-instance-in-django-modelform):
+
+```python
+# Load up an instance
+my_poll = Poll.objects.get(id=1)
+
+# Declare a ModelForm with the instance
+my_form = PollForm(request.POST, instance=my_poll)
+
+# save() will return the model_form.instance attr which is the same as the model passed in
+my_form.save() == my_poll == my_form.instance
+```
+
+---
+
+Every field you specify will have a corresponding form field in the order that you specify them in the ModelForm fields attribute. (Not necessarily same as the order in the model itself).
+
+This code that the ModelForm makes is equivalent (roughly) to this:
+
+```
+class PostForm(forms.Form):
+    title = forms.CharField(max_length=200)
+    text = forms.TextField()
+```
+And in this case it is not much of a saving in code but as the models become more complicated it can be very useful.
+
+### class Meta - Model metadata
+Model metadata is “anything that’s not a field”, such as ordering options (ordering), database table name (db_table), or human-readable singular and plural names (verbose_name and verbose_name_plural). None are required, and adding class Meta to a model is completely optional.
+
+A complete list of all possible Meta options can be found in the model option reference.[https://docs.djangoproject.com/en/2.1/ref/models/options/](https://docs.djangoproject.com/en/2.1/ref/models/options/)
 
 ### Inheritance and subclassing from class/classes
 
@@ -624,7 +677,9 @@ def post_new(request):
     return render(request, 'blog/post_edit.html', {'form': form})
 
 ```
-Going through this line by line, the first if statement checks the method is correct (I am not sure why it wouldnt be but there you are) the next line assigns `form` to `PostForm` which we have imported from our .forms. this is a class which subclasses (inherits from) ModelForm which is part of the Django framework. [https://github.com/django/django/blob/master/django/forms/models.py](https://github.com/django/django/blob/master/django/forms/models.py) the docs explain about the Meta class:[Https://github.com/django/django/blob/master/DOCS/TOPICs/forms/modelforms.txt ](https://github.com/django/django/blob/master/docs/topics/forms/modelforms.txt) 
+Going through this line by line, the first if statement checks the method is POST... this is when the form has ALREADY been filled on the page and we are sending data to the server... (so it is actually the second thing that can happen on the page)
+
+The next line assigns `form` to `PostForm` which we have imported from our .forms. this is a class which subclasses (inherits from) ModelForm which is part of the Django framework. [https://github.com/django/django/blob/master/django/forms/models.py](https://github.com/django/django/blob/master/django/forms/models.py) the docs explain about the Meta class:[Https://github.com/django/django/blob/master/DOCS/TOPICs/forms/modelforms.txt ](https://github.com/django/django/blob/master/docs/topics/forms/modelforms.txt) 
 
 The form = PostForm(request.Post) generates a form instance with the data from the request. In the console you could do this by assinging the data to a variable and then using the argument `(instance=variable)`. For example:
 
@@ -654,8 +709,17 @@ from django.shortcuts import redirect
 
 this needs to be in the *views.py* so that you can then have the return redirect line that takes the argument for the view action you wish to return and any paramaters required so here it is post_detail. Here post has been defined as the newly created post in the line `post = form.save...` so here pk = post.pk.
 
-The else clause is a PostForm without any data... But we still need a post_edit view and template for this scenario. Although I dont know how you would actually get to this because at the moment if you dont fill in all the fields it just says 'please fill in this field' and stays at post/new.
+The else clause is a PostForm without any data... ie the fresh page that we land on. We still need a post_edit view and template for this scenario. These are quite straightforward.
 
+## Security 
 
+In order to limit who can create or edit posts you can use the `user.is_authenticated` helper in the html file *base.html*:
 
+```html
+{% if user.is_authenticated %}
+    <a href="{% url 'post_new' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
+{% endif %}
+```
+
+This should also be added to the *post_detail.html* for editing posts.
 
