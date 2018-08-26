@@ -53,6 +53,18 @@ SECRET_KEY = os.environ.get('SECRET')
 
 However I will add deploying to Heroku but it is important to note that I will only deploy as if the route folder is *hartle-ror-in-python* whereas the version control (Git) in in the directory above that.
 
+## Install [Heroku](https://devcenter.heroku.com/articles/getting-started-with-python#set-up)
+
+```python
+brew install heroku/brew/heroku
+```
+ Log in:
+
+```sh
+heroku login
+```
+(you may need to create an account first)
+
 ## Usage of [Django-Heroku](https://github.com/heroku/django-heroku) 
 At the bottom of *settings.py*:
 
