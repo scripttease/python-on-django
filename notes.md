@@ -240,6 +240,35 @@ Like the rails convention of model=view-controller, python has models too. These
 
 When modelling an object such as a post, that is going to be stored in a database, you also include the database field descriptors such as ForeignKey (which links it to other models), type of field (such as CharField (character field) and whether it can be black or null. This (in Ruby) is known as a schema and is NOT stored with the model. 
 
+To make our model, in *blog/model*:
+
+```python
+# Import the Django Model class to subclass our Post model from
+from django.db import models
+# Import Django datetime library
+from django.utils import timezone
+
+
+class Post(models.Model):
+    author = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    text = models.TextField()
+    created_date = models.DateTimeField(
+            default=timezone.now)
+    published_date = models.DateTimeField(
+            blank=True, null=True)
+
+# Create a method/action/function that includes self.save which saves instances of our model to the database
+    def publish(self):
+        self.published_date = timezone.now()
+        self.save()
+
+# Create a string that will function as a name for the instance.
+    def __str__(self):
+        return self.title
+```
+
+
 ## Migrations
 
 To crate a migration file from your model (which you can then edit for more complicated database shenanigans) run:
