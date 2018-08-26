@@ -74,6 +74,6 @@ import django_heroku
 django_heroku.settings(locals())
 ```
 
-
+**NB Some of  the directories and filenames in my previous DjangoGirls tutorials and examples were renamed with an 'x' preceeding the file name so that django and Heroku don't look there for framework/etc and I am convinced that this would have been more sensibly done by moving everything to a new repo in hidsight or that there was a much better way to do this (ie put stuff in the .gitignore) but I didn't think of that...**
 
 
