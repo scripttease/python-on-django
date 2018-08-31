@@ -1,0 +1,14 @@
+{% extends 'toy_app/base.html' %}
+
+{% block content %}
+<div class="user">
+    {% if user.date_joined %}
+    <div class="date">
+        {{ user.date_joined }}
+    </div>
+    {% endif %}
+    <h1>{{ user.first_name }}</h1>
+    <p>{{ user }}</p>
+</div>
+{% endblock %}
+

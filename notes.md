@@ -342,8 +342,7 @@ admin.site.register(Post)
 ```py
 """mysite URL Configuration
 
-[...]
-"""
+[...] """
 ```
 Anything elclosed in """ in py is a docstring
 

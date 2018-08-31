@@ -1,0 +1,24 @@
+{% extends 'toy_app/base.html' %}
+{% block content %}
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th colspan="3"></th>
+        </tr>
+    </thead>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.first_name }}</td>
+        <td>{{ user.email }}</td>
+        <td><h1><a href="{% url 'user_show' pk=user.pk %}">{{ user.first_name }}</a></h1></td>
+        <td><a class="btn btn-default" href="{% url 'user_edit' pk=user.pk %}"><span class="glyphicon glyphicon-pencil"></span></a></td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="{% url 'user_new' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a>
+{% endblock %}
