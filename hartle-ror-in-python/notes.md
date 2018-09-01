@@ -476,5 +476,69 @@ here it suggests that you validate the existence of a field but Django assumes b
             blank=True, null=True)
 ```
 
+# Chapter 3 Mostly static pages
+
+## 3.1 create a sample app
+### Quick recap of the steps to get started:
+
+* change directory to the your projects folder
+you don't want any sqlite.db or venv files in your working directory, so why not create a new one
+My shell looks like this:
+
+```sh
+al ~/projects/python-on-django/
+
+# create new project folder and cd into it
+mkdir sample-app-hartle-ror
+cd sample-app-hartle-ror/
+
+#Upgrade pip
+python3 -m pip install --upgrade pip
+
+# create a virtual environment
+python3 -m venv venv
+
+# activate venv
+source venv/bin/activate.fish
+
+#create requirements.txt containing Django version
+echo "Django~=2.0.6" >> requirements.txt
+
+#run it
+pip install -r requirements.txt
+
+# Start new sample project in current dir.
+django-admin startproject sample_project .
+```
+* At the end of the settings.py file add the following line:
+
+```py
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+```
+* scaffold the sample app
+
+```sh
+python manage.py startapp sample_app
+```
+* in *settings.py* add sample_app as shown:
+
+```py
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'sample_app',
+]
+```
+
+* Run admin and auth migrations
+
+```sh
+python manage.py makemigrations
+python manage.py migrate
+```
 
 
