@@ -1,0 +1,16 @@
+{% extends 'toy_app/base.html' %}
+{% block content %}
+
+{% for micropost in microposts %}
+<div class="micropost">
+    {% if micropost.published_date %}
+    <div class="date">
+        {{ micropost.published_date }}
+    </div>
+    {% endif %}
+    <a class="btn btn-default" href="{% url 'micropost_edit' pk=micropost.pk %}"><span class="glyphicon glyphicon-pencil"></span></a>
+    <h1><a href="{% url 'micropost_show' pk=micropost.pk %}">{{ micropost.title }}</a></h1>
+    <p>{{ micropost.content|linebreaksbr }}</p>
+</div>
+{% endfor %}
+{% endblock %}

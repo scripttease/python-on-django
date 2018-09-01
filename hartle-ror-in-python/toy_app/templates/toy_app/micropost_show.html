@@ -1,0 +1,18 @@
+{% extends 'toy_app/base.html' %}
+
+{% block content %}
+<div class="micropost">
+    {% if micropost.published_date %}
+    <div class="date">
+        {{ micropost.published_date }}
+    </div>
+    {% endif %}
+    {% if user.is_authenticated %}
+    <a class="btn btn-default" href="{% url 'micropost_edit' pk=micropost.pk %}"><span class="glyphicon glyphicon-pencil"></span></a>
+    <a class="btn btn-default" href="{% url 'micropost_remove' pk=micropost.pk %}"><span class="glyphicon glyphicon-remove"></span></a>
+    {% endif %}
+    <h1>{{ micropost.title }}</h1>
+    <p>{{ micropost.content }}</p>
+</div>
+{% endblock %}
+

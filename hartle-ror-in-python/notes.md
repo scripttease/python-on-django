@@ -319,3 +319,162 @@ our user_list.html doesnt look much like the one in 2.10 but we can make it so t
 ## 2.3.1 Microposts
 
 In the rails tutorial this model, all the views and so on are generated with scaffolding. There is no built in way to do this in Django and although there are libraries that do this I do not trust them so we will just do it all from scratch for an exercise
+
+The mocropost model simply has a user, which will be linked using a foreign key to our auth_user resource and a content which is a text field. In *models.py* we have already made this, now we need to add it to our views etc I am also going to add a created_date and a published date for if we edit it.
+
+In order to add this model to our database:
+
+```sh
+python manage.py makemigrations toy_app
+python manage.py migrate toy_apjp
+```
+
+Now make the index, show, new, create, and edit actions (ignore update and destroy)
+
+### First make the routes in *urls.py*
+### Make your 'controller' actions in *views.py* after you first import the model:
+
+```py
+from .models import Micropost
+```
+
+Make views similar to the user views and do the same with templates...
+
+### Forms: you will need a new MicroPost form in *forms.py*
+
+
+**Remember to import your micropost model into _admin.py_**
+
+```py
+from .models import Micropost
+
+admin.site.register(Micropost)
+```
+
+At this point I keep running into the wall of being logged in etc. So I am going to go back to the tutorial and look at the extension here [https://tutorial-extensions.djangogirls.org/en/homework/](https://tutorial-extensions.djangogirls.org/en/homework/)
+
+## Deleting a micropost
+
+*urls.py*
+
+```py
+from django.conf.urls import url
+
+# In the patterns list
+url(r'^post/(?P<pk>\d+)/remove/$', views.post_remove, name='post_remove')
+```
+Normally we have the prefix `path` but if we don't necessarily want an actual page, or we haven't imported the path library, we can use `url`. The preceding `r` is optional but it is a good idea to include it because it tells Django to look for an exact match to the url. Inside the quote marks we have the actual url, howvere the `^` and `$` are markers to show the interpreter where the string to match begins and ends. Next we have post followed by a regex which captures the number that comes after post/ and assigns it to `pk` and pass it to the view. Note that I am not sure why the `/` do not have to be escaped in this regex...
+[https://docs.djangoproject.com/en/1.11/topics/http/urls/#named-groups](https://docs.djangoproject.com/en/1.11/topics/http/urls/#named-groups) and [stackoverflow question about it](https://stackoverflow.com/questions/47246068/django-forms-what-does-ppk-d-signify)
+
+In *views.py*
+
+```py
+def micropost_remove(request, pk):
+    micropost = get_object_or_404(Micropost, pk=pk)
+    micropost.delete()
+    return redirect('micropost_list')
+```
+
+In *post_show.html*
+
+```html
+
+<a class="btn btn-default" href="{% url 'micropost_remove' pk=micropost.pk %}"><span class="glyphicon glyphicon-remove"></span></a>
+```
+
+## 2.3.2 Microposts - validation
+
+Ok so now we *are* up to date we know how to destroy a post (and a user if we had made that resource ourselves). Next, validation. First we will restrict the length of  micropost to 140 characters.
+
+In *models.py* in my micropost model I changed the content line to this
+
+```py
+    content = models.TextField(max_length=140)
+```
+
+Now I can't actually type more than 140 chars in the box - it just won't let me. Cool.
+
+## 2.3.3 Associations has many and belongs to
+
+In Rails you need to specify this in the model BUT when we were making our micropost model we gave it a field for user_id that was linked to the Foreign Key of auth_user. This means that this relationship already exists. More relationships can be looked up in the docs in the [model fields reference](https://docs.djangoproject.com/en/2.1/ref/models/fields/#django.db.models.ManyToManyField)
+
+So we can do micropost.user but in order to do user.microposts we need to specify the `related_name` field so that the one to many relationship which we have in place (by giving one table a foreign key) acts in reverse too.
+
+You can see and example [here](https://code.kodo.org.uk/dom/django/blob/38575b007a722d6af510ea46d46393a4cda9ca29/django/db/models/fields/related_descriptors.py) but in our *model.py* we essentially want the relevant line changed to this
+
+```py
+    user_id = models.ForeignKey('auth.User', related_name='microposts', on_delete=models.CASCADE)
+
+```
+
+
+# SHELL CONSOLE
+see [this](https://github.com/jonathanslenders/python-prompt-toolkit/issues/25) and [this:](https://gist.github.com/Quotation/909f87320b03b028d23c)
+In order to have an easy to use shell console running ptpython, in your app folder ( in this case *toy_app/* create a folder called *management* in this folder add an empty file called *__init__.py* and a folder called *__pycache__* and one called*commands* In commands you also need an *__init__.py* and a file called *shell.py* containing:
+
+```py
+
+from django.core.management.commands.shell import Command as ShellCommand
+import os
+
+
+class Command(ShellCommand):
+    # ShellCommand.shells.insert(0,'ptpython')
+    # Note when you define a class with brackets after then what you are doing is actually defining a subclass of what is in teh brackets - so ShellCommand here (which is actually originally Command from core/management if you look at the import) is a class that already exists. In the above commented out line I was mutating it to include ptypthon BUT its a bad idea to mutate classes so Ive used below instead:
+
+    shells = ['ptpython'] + ShellCommand.shells
+
+    def ptpython(self, options):
+        from ptpython.repl import embed
+        embed(globals(), locals(), vi_mode=False)
+```
+
+Then Append `django_extensions` to the `INSTALLED_APPS` variable in *settings.py* .
+
+Then in your environment shell:
+
+```sh
+pip install django-extensions
+```
+Run the console with
+```sh
+python manage.py shell
+or
+python manage.py shell -i ptpython
+```
+
+then you want to start with :
+
+```sh
+>>> from toy_app.models import Micropost
+
+>>> from django.contrib.auth.models import User
+
+>>> user1 = User.objects.first()
+>>> User.objects.values_list()
+
+>>> u = User.objects.first()
+
+>>> m = Micropost.objects.first()
+## NB if this last doesn't work add a related name field to the forgein key
+
+>>> u.microposts.all()
+
+>>> m1 = u.microposts.first()
+
+>>> m1.published_date
+```
+Look at the docs for the [Many to one relationships](https://docs.djangoproject.com/en/2.1/topics/db/examples/many_to_one/)
+
+
+## Listing 2.16
+
+here it suggests that you validate the existence of a field but Django assumes by default that a field cannot be null or blank so if you want the fields to be optional you would have to do the following in *models.py* 
+
+```py
+    published_date = models.DateTimeField(
+            blank=True, null=True)
+```
+
+
+
