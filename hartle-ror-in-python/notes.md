@@ -541,4 +541,8 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
+## 3.2 Static pages Home, Help, About
+
+Rails uses generators to do this but Python doesn't have those so its back to the drawing board, making routes for the urls in *urls.py*, controlling them in the *views.py* with actions, and making templates in *sample_app/templates/sample_app*. Static pages aren't modelling anything so we don't need models yet.
+
 
